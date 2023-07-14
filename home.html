@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Readings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Sensor Readings</h1>
+
+    <canvas id="sensorChart"></canvas>
+
+    <script>
+        var ctx = document.getElementById('sensorChart').getContext('2d');
+        var sensorChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ timestamps|tojson }},
+                datasets: [
+                    {
+                        label: 'INA219DC Readings',
+                        data: {{ sensor_readings['ina219dc']|tojson }},
+                        fill: false,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'ADS1115 Readings',
+                        data: {{ sensor_readings['ads1115']|tojson }},
+                        fill: false,
+                        borderColor: 'rgb(192, 75, 75)',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'ACS758LCB Readings',
+                        data: {{ sensor_readings['acs758lcb']|tojson }},
+                        fill: false,
+                        borderColor: 'rgb(75, 75, 192)',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'MAX31856 Readings',
+                        data: {{ sensor_readings['max31856']|tojson }},
+                        fill: false,
+                        borderColor: 'rgb(192, 192, 75)',
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+    <div class="container">
+        <h1>Sensor Readings</h1>
+        <ul>
+            {% for key, value in sensor_readings.items() %}
+                <li>{{ key }}: {{ value }}</li>
+            {% endfor %}
+        </ul>
+	<h2 id="buttonState">Button State: </h2>
+	<h2 id="relayState">Relay State: </h2>
+	<h2 id="ledColor">LED Color: </h2>
+    </div>
+
+    <button id="toggleButton">Toggle Relay and LED Color</button>
+
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <script>
+        document.getElementById('toggleButton').addEventListener('click', function() {
+            fetch('/toggle', {method: 'POST'})
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                })
+                .catch(error => {
+                    console.error('There has been a problem with your fetch operation:', error);
+                });
+        });
+    </script>
+</body>
+</html>
